@@ -1,0 +1,34 @@
+name: Deploy Spring Boot to Azure Web App
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Which branch to deploy?"
+        required: true
+        default: "main"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v2
+        with:
+          java-version: "21"
+          distribution: "temurin"
+
+      - name: Build with Maven
+        run: mvn clean package --file pom.xml
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: user-management-backend
+          slot-name: "production"
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: target/user-management-backend-0.0.1-SNAPSHOT.jar
